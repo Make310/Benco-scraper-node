@@ -46,6 +46,9 @@ MAX_PAGES=2
 MIN_DELAY=1
 MAX_DELAY=3
 
+# Tipo de scraper: http o puppeteer
+SCRAPER_TYPE=http
+
 # Tipo de almacenamiento: json o sqlite
 STORAGE_TYPE=json
 
@@ -80,6 +83,7 @@ BENCO DENTAL SCRAPER
 Categoría: Acrylics & Relines
 Max páginas: 2
 Delay: 1.0-3.0s
+Scraper: HTTP
 ==================================================
 
 [Página 1/2]
@@ -127,23 +131,46 @@ test_scraping_node/
 ## Arquitectura
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
-│  index.js   │────>│  scraper.js │     │   storage.js    │
-│ Orchestrator│     │ BencoScraper│     │                 │
-└──────┬──────┘     └─────────────┘     │  BaseStorage    │
-       │                                │       │         │
-       │                                │  ┌────┴────┐    │
-       └───────────────────────────────>│  │         │    │
-                                        │ Json    SQLite  │
-                                        └─────────────────┘
+┌─────────────┐     ┌───────────────────┐     ┌─────────────────┐
+│  index.js   │────>│    scraper.js     │     │   storage.js    │
+│ Orchestrator│     │                   │     │                 │
+└──────┬──────┘     │    BaseScraper    │     │  BaseStorage    │
+       │            │        │          │     │       │         │
+       │            │   ┌────┴────┐     │     │  ┌────┴────┐    │
+       │            │   │         │     │     │  │         │    │
+       │            │ Http    Puppeteer │     │ Json    SQLite  │
+       │            └───────────────────┘     └─────────────────┘
+       │                    │                         │
+       └────────────────────┴─────────────────────────┘
 ```
 
 | Módulo | Responsabilidad |
 |--------|-----------------|
 | `models.js` | Estructuras de datos (Config, Statistics) |
-| `scraper.js` | Extracción HTTP y parsing HTML |
-| `storage.js` | Persistencia con patrón Strategy |
+| `scraper.js` | Extracción con patrón Strategy (HTTP / Puppeteer) |
+| `storage.js` | Persistencia con patrón Strategy (JSON / SQLite) |
 | `index.js` | Orquestación del flujo |
+
+## Modo de Scraping
+
+### HTTP (default)
+
+```env
+SCRAPER_TYPE=http
+```
+
+Usa `fetch` nativo + `cheerio`. Rápido y ligero (~100ms/página).
+
+### Puppeteer
+
+```env
+SCRAPER_TYPE=puppeteer
+```
+
+Usa navegador Chromium headless. Más lento (~2-5s/página) pero útil para:
+- Sitios con JavaScript dinámico
+- Contenido que requiere renderizado
+- Evadir detección anti-bot
 
 ## Almacenamiento
 
@@ -182,4 +209,5 @@ sqlite3 productos.db "SELECT sku, name, price FROM products LIMIT 5;"
 better-sqlite3 >= 11.0.0
 cheerio >= 1.0.0
 dotenv >= 16.0.0
+puppeteer >= 23.0.0
 ```

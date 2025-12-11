@@ -13,6 +13,7 @@ export class Config {
         this.outputFile = process.env.OUTPUT_FILE || 'productos.json';
         this.storageType = process.env.STORAGE_TYPE || 'json';
         this.dbPath = process.env.DB_PATH || 'productos.db';
+        this.scraperType = process.env.SCRAPER_TYPE || 'http';
         this.headers = {
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
             'accept-language': 'en-US,en;q=0.9',

@@ -8,7 +8,7 @@
  */
 
 import { Config, Statistics } from './models.js';
-import { BencoScraper } from './scraper.js';
+import { ScraperFactory } from './scraper.js';
 import { StorageFactory } from './storage.js';
 
 function formatDateTime(date) {
@@ -26,7 +26,7 @@ function randomDelay(min, max) {
 class Orchestrator {
     constructor(config) {
         this.config = config;
-        this.scraper = new BencoScraper(config);
+        this.scraper = ScraperFactory.create(config.scraperType, config);
         this.storage = StorageFactory.create(config.storageType, {
             filepath: config.outputFile,
             dbPath: config.dbPath
@@ -44,7 +44,11 @@ class Orchestrator {
         console.log(`Categoría: ${this.config.categoryName}`);
         console.log(`Max páginas: ${this.config.maxPages}`);
         console.log(`Delay: ${this.config.minDelay}-${this.config.maxDelay}s`);
+        console.log(`Scraper: ${this.config.scraperType.toUpperCase()}`);
         console.log('='.repeat(50) + '\n');
+
+        // Inicializar scraper (necesario para Puppeteer)
+        await this.scraper.init();
 
         const allProducts = [];
         const seenSkus = new Set();
@@ -98,6 +102,9 @@ class Orchestrator {
             statistics: this.stats.toDict(),
             products: allProducts
         };
+
+        // Cerrar scraper (necesario para Puppeteer)
+        await this.scraper.close();
 
         const outputLocation = this.config.storageType === 'sqlite' ? this.config.dbPath : this.config.outputFile;
         if (this.storage.save(outputData)) {

@@ -1,16 +1,31 @@
 /**
  * Scraper para Benco Dental.
- * Extrae productos de shop.benco.com
+ * Implementa el patrón Strategy para soportar HTTP y Puppeteer.
  */
 
 import { gzipSync } from 'zlib';
 import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer';
 
 const BASE_URL = 'https://shop.benco.com';
 
-export class BencoScraper {
+// ===========================================
+// CLASE BASE (ABSTRACT)
+// ===========================================
+
+class BaseScraper {
     constructor(config) {
         this.config = config;
+    }
+
+    async init() {
+    }
+
+    async close() {
+    }
+
+    async fetchPage(category, page) {
+        throw new Error('Method fetchPage() must be implemented');
     }
 
     buildQueryParam(category, page = 1) {
@@ -33,29 +48,12 @@ export class BencoScraper {
 
         const jsonStr = JSON.stringify(data);
         const compressed = gzipSync(Buffer.from(jsonStr, 'utf-8'));
-        const encoded = compressed.toString('base64');
-        return encoded;
+        return compressed.toString('base64');
     }
 
-    async fetchPage(category, page) {
-        try {
-            const params = new URLSearchParams({ q: this.buildQueryParam(category, page) });
-            const url = `${BASE_URL}/Search?${params}`;
-
-            const response = await fetch(url, {
-                headers: this.config.headers,
-                signal: AbortSignal.timeout(30000)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            return await response.text();
-        } catch (error) {
-            console.log(`  [ERROR] Página ${page}: ${error.message}`);
-            return null;
-        }
+    buildUrl(category, page) {
+        const params = new URLSearchParams({ q: this.buildQueryParam(category, page) });
+        return `${BASE_URL}/Search?${params}`;
     }
 
     parseProducts(html, seenSkus, categoryName) {
@@ -233,5 +231,98 @@ export class BencoScraper {
         });
 
         return result;
+    }
+}
+
+// ===========================================
+// IMPLEMENTACIÓN HTTP (fetch + cheerio)
+// ===========================================
+
+class HttpScraper extends BaseScraper {
+    async fetchPage(category, page) {
+        try {
+            const url = this.buildUrl(category, page);
+
+            const response = await fetch(url, {
+                headers: this.config.headers,
+                signal: AbortSignal.timeout(30000)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            return await response.text();
+        } catch (error) {
+            console.log(`  [ERROR] Página ${page}: ${error.message}`);
+            return null;
+        }
+    }
+}
+
+// ===========================================
+// IMPLEMENTACIÓN PUPPETEER
+// ===========================================
+
+class PuppeteerScraper extends BaseScraper {
+    constructor(config) {
+        super(config);
+        this.browser = null;
+        this.page = null;
+    }
+
+    async init() {
+        console.log('  [Puppeteer] Iniciando navegador...');
+        this.browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        this.page = await this.browser.newPage();
+        await this.page.setUserAgent(this.config.headers['user-agent']);
+        await this.page.setViewport({ width: 1280, height: 800 });
+    }
+
+    async close() {
+        if (this.browser) {
+            console.log('  [Puppeteer] Cerrando navegador...');
+            await this.browser.close();
+        }
+    }
+
+    async fetchPage(category, page) {
+        try {
+            const url = this.buildUrl(category, page);
+
+            await this.page.goto(url, {
+                waitUntil: 'networkidle2',
+                timeout: 30000
+            });
+
+            // Esperar a que cargue el grid de productos
+            await this.page.waitForSelector('.product-grid', { timeout: 10000 });
+
+            return await this.page.content();
+        } catch (error) {
+            console.log(`  [ERROR] Página ${page}: ${error.message}`);
+            return null;
+        }
+    }
+}
+
+// ===========================================
+// FACTORY
+// ===========================================
+
+export class ScraperFactory {
+    static create(scraperType, config) {
+        const type = scraperType.toLowerCase();
+
+        if (type === 'http') {
+            return new HttpScraper(config);
+        } else if (type === 'puppeteer') {
+            return new PuppeteerScraper(config);
+        } else {
+            throw new Error(`Tipo de scraper no soportado: ${scraperType}`);
+        }
     }
 }

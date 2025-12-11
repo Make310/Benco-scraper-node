@@ -1,5 +1,5 @@
 /**
- * Modelos de datos para el scraper.
+ * Data models for the scraper.
  */
 
 import 'dotenv/config';
@@ -49,7 +49,7 @@ export class Statistics {
 
     printSummary() {
         console.log('\n' + '='.repeat(50));
-        console.log('ESTADÍSTICAS DE LA CORRIDA');
+        console.log('RUN STATISTICS');
         console.log('='.repeat(50));
         console.log(JSON.stringify(this.toDict(), null, 2));
         console.log('='.repeat(50));

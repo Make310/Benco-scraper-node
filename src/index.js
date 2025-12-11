@@ -1,9 +1,9 @@
 /**
  * Benco Dental Web Scraper
  * ========================
- * Punto de entrada principal y orquestación del scraping.
+ * Main entry point and scraping orchestration.
  *
- * Uso:
+ * Usage:
  *     npm run scrape
  */
 
@@ -18,7 +18,7 @@ function formatDateTime(date) {
 function randomDelay(min, max) {
     const delay = Math.random() * (max - min) + min;
     return new Promise(resolve => {
-        console.log(`  Esperando ${delay.toFixed(1)}s...`);
+        console.log(`  Waiting ${delay.toFixed(1)}s...`);
         setTimeout(resolve, delay * 1000);
     });
 }
@@ -41,13 +41,13 @@ class Orchestrator {
         console.log('='.repeat(50));
         console.log('BENCO DENTAL SCRAPER');
         console.log('='.repeat(50));
-        console.log(`Categoría: ${this.config.categoryName}`);
-        console.log(`Max páginas: ${this.config.maxPages}`);
+        console.log(`Category: ${this.config.categoryName}`);
+        console.log(`Max pages: ${this.config.maxPages}`);
         console.log(`Delay: ${this.config.minDelay}-${this.config.maxDelay}s`);
         console.log(`Scraper: ${this.config.scraperType.toUpperCase()}`);
         console.log('='.repeat(50) + '\n');
 
-        // Inicializar scraper (necesario para Puppeteer)
+        // Initialize scraper (required for Puppeteer)
         await this.scraper.init();
 
         const allProducts = [];
@@ -56,12 +56,12 @@ class Orchestrator {
         let totalPagesToScrape = this.config.maxPages;
 
         for (let page = 1; page <= totalPagesToScrape; page++) {
-            console.log(`[Página ${page}/${totalPagesToScrape}]`);
+            console.log(`[Page ${page}/${totalPagesToScrape}]`);
 
             const html = await this.scraper.fetchPage(this.config.categoryName, page);
 
             if (html === null) {
-                console.log(`  [SKIP] Página ${page} falló, continuando...`);
+                console.log(`  [SKIP] Page ${page} failed, continuing...`);
                 continue;
             }
 
@@ -70,8 +70,8 @@ class Orchestrator {
                 this.stats.categoryUrl = categoryInfo.url || '';
                 const total = categoryInfo.totalProducts || 0;
                 const totalPages = Math.ceil(total / 24);
-                console.log(`  Categoría: ${categoryInfo.name}`);
-                console.log(`  Total en sitio: ${total} productos (${totalPages} páginas)`);
+                console.log(`  Category: ${categoryInfo.name}`);
+                console.log(`  Total on site: ${total} products (${totalPages} pages)`);
 
                 if (this.config.maxPages === 0) {
                     totalPagesToScrape = totalPages;
@@ -85,7 +85,7 @@ class Orchestrator {
             this.stats.totalSaved += products.length;
 
             allProducts.push(...products);
-            console.log(`  Detectados: ${detected} | Guardados: ${products.length} | Omitidos: ${skipped}`);
+            console.log(`  Detected: ${detected} | Saved: ${products.length} | Skipped: ${skipped}`);
 
             if (page < totalPagesToScrape) {
                 await randomDelay(this.config.minDelay, this.config.maxDelay);
@@ -103,12 +103,12 @@ class Orchestrator {
             products: allProducts
         };
 
-        // Cerrar scraper (necesario para Puppeteer)
+        // Close scraper (required for Puppeteer)
         await this.scraper.close();
 
         const outputLocation = this.config.storageType === 'sqlite' ? this.config.dbPath : this.config.outputFile;
         if (this.storage.save(outputData)) {
-            console.log(`\nGuardado en: ${outputLocation}`);
+            console.log(`\nSaved to: ${outputLocation}`);
         }
 
         this.stats.printSummary();

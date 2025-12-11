@@ -1,6 +1,6 @@
 /**
- * Scraper para Benco Dental.
- * Implementa el patrón Strategy para soportar HTTP y Puppeteer.
+ * Scraper for Benco Dental.
+ * Implements the Strategy pattern to support HTTP and Puppeteer.
  */
 
 import { gzipSync } from 'zlib';
@@ -10,7 +10,7 @@ import puppeteer from 'puppeteer';
 const BASE_URL = 'https://shop.benco.com';
 
 // ===========================================
-// CLASE BASE (ABSTRACT)
+// BASE CLASS (ABSTRACT)
 // ===========================================
 
 class BaseScraper {
@@ -27,6 +27,7 @@ class BaseScraper {
     async fetchPage(category, page) {
         throw new Error('Method fetchPage() must be implemented');
     }
+
 
     buildQueryParam(category, page = 1) {
         const data = {
@@ -109,7 +110,7 @@ class BaseScraper {
 
             product.product_url = `${BASE_URL}${href.split('?')[0]}`;
 
-            // Limpiar texto: colapsar whitespace y remover CSS/HTML residual
+            // Clean text: collapse whitespace and remove residual CSS/HTML
             const rawName = link.text()
                 .replace(/\s+/g, ' ')
                 .replace(/\.[\w-]+\s*>\s*[\w-]+\s*\{[^}]*\}/g, '')
@@ -235,7 +236,7 @@ class BaseScraper {
 }
 
 // ===========================================
-// IMPLEMENTACIÓN HTTP (fetch + cheerio)
+// HTTP IMPLEMENTATION (fetch + cheerio)
 // ===========================================
 
 class HttpScraper extends BaseScraper {
@@ -254,14 +255,14 @@ class HttpScraper extends BaseScraper {
 
             return await response.text();
         } catch (error) {
-            console.log(`  [ERROR] Página ${page}: ${error.message}`);
+            console.log(`  [ERROR] Page ${page}: ${error.message}`);
             return null;
         }
     }
 }
 
 // ===========================================
-// IMPLEMENTACIÓN PUPPETEER
+// PUPPETEER IMPLEMENTATION
 // ===========================================
 
 class PuppeteerScraper extends BaseScraper {
@@ -272,7 +273,7 @@ class PuppeteerScraper extends BaseScraper {
     }
 
     async init() {
-        console.log('  [Puppeteer] Iniciando navegador...');
+        console.log('  [Puppeteer] Starting browser...');
         this.browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -284,7 +285,7 @@ class PuppeteerScraper extends BaseScraper {
 
     async close() {
         if (this.browser) {
-            console.log('  [Puppeteer] Cerrando navegador...');
+            console.log('  [Puppeteer] Closing browser...');
             await this.browser.close();
         }
     }
@@ -298,12 +299,12 @@ class PuppeteerScraper extends BaseScraper {
                 timeout: 30000
             });
 
-            // Esperar a que cargue el grid de productos
+            // Wait for the product grid to load
             await this.page.waitForSelector('.product-grid', { timeout: 10000 });
 
             return await this.page.content();
         } catch (error) {
-            console.log(`  [ERROR] Página ${page}: ${error.message}`);
+            console.log(`  [ERROR] Page ${page}: ${error.message}`);
             return null;
         }
     }
@@ -322,7 +323,7 @@ export class ScraperFactory {
         } else if (type === 'puppeteer') {
             return new PuppeteerScraper(config);
         } else {
-            throw new Error(`Tipo de scraper no soportado: ${scraperType}`);
+            throw new Error(`Unsupported scraper type: ${scraperType}`);
         }
     }
 }

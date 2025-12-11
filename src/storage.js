@@ -1,13 +1,13 @@
 /**
- * Módulo de almacenamiento de datos.
- * Implementa el patrón Strategy para soportar múltiples backends.
+ * Data storage module.
+ * Implements the Strategy pattern to support multiple backends.
  */
 
 import { writeFileSync } from 'fs';
 import Database from 'better-sqlite3';
 
 // ===========================================
-// CLASE ABSTRACTA BASE
+// BASE ABSTRACT CLASS
 // ===========================================
 
 class BaseStorage {
@@ -17,7 +17,7 @@ class BaseStorage {
 }
 
 // ===========================================
-// IMPLEMENTACIÓN JSON
+// JSON IMPLEMENTATION
 // ===========================================
 
 class JsonStorage extends BaseStorage {
@@ -32,14 +32,14 @@ class JsonStorage extends BaseStorage {
             writeFileSync(this.filepath, JSON.stringify(data, null, this.indent), 'utf-8');
             return true;
         } catch (error) {
-            console.log(`[ERROR] No se pudo guardar el archivo JSON: ${error.message}`);
+            console.log(`[ERROR] Could not save JSON file: ${error.message}`);
             return false;
         }
     }
 }
 
 // ===========================================
-// IMPLEMENTACIÓN SQLITE
+// SQLITE IMPLEMENTATION
 // ===========================================
 
 class SqliteStorage extends BaseStorage {
@@ -133,10 +133,10 @@ class SqliteStorage extends BaseStorage {
                 }
             }
 
-            console.log(`  [DB] Guardados: ${savedCount} | Ya existían: ${skippedCount}`);
+            console.log(`  [DB] Saved: ${savedCount} | Already existed: ${skippedCount}`);
             return true;
         } catch (error) {
-            console.log(`[ERROR] No se pudo guardar en la base de datos: ${error.message}`);
+            console.log(`[ERROR] Could not save to database: ${error.message}`);
             return false;
         }
     }
@@ -155,7 +155,7 @@ export class StorageFactory {
         } else if (type === 'sqlite') {
             return new SqliteStorage(options.dbPath || 'productos.db');
         } else {
-            throw new Error(`Tipo de storage no soportado: ${storageType}`);
+            throw new Error(`Unsupported storage type: ${storageType}`);
         }
     }
 }

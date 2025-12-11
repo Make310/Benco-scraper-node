@@ -1,103 +1,103 @@
 # Benco Dental Web Scraper
 
-Scraper para extraer productos de [shop.benco.com](https://shop.benco.com).
+Scraper to extract products from [shop.benco.com](https://shop.benco.com).
 
-> Este proyecto fue desarrollado inicialmente en **Python** utilizando `requests` y `BeautifulSoup`, y posteriormente migrado a **Node.js** con `fetch` nativo y `cheerio`.
+> This project was initially developed in **Python** using `requests` and `BeautifulSoup`, and later migrated to **Node.js** with native `fetch` and `cheerio`.
 >
-> Repositorio: [github.com/Make310/Benco-scraper](https://github.com/Make310/Benco-scraper)
+> Repository: [github.com/Make310/Benco-scraper](https://github.com/Make310/Benco-scraper)
 
-## Requisitos
+## Requirements
 
 - Node.js >= 18.0.0
 
-## Datos Extraídos
+## Extracted Data
 
-| Campo | Descripción |
+| Field | Description |
 |-------|-------------|
-| `sku` | Identificador único del producto |
-| `name` | Nombre del producto |
-| `price` | Precio (cuando está disponible) |
-| `availability` | Estado de stock / fecha de envío |
-| `brand` | Marca del fabricante |
-| `product_category` | Categoría del producto |
-| `image_url` | URL de la imagen |
-| `product_url` | URL del producto |
-| `rating` | Calificación promedio |
-| `review_count` | Número de reviews |
+| `sku` | Unique product identifier |
+| `name` | Product name |
+| `price` | Price (when available) |
+| `availability` | Stock status / shipping date |
+| `brand` | Manufacturer brand |
+| `product_category` | Product category |
+| `image_url` | Image URL |
+| `product_url` | Product URL |
+| `rating` | Average rating |
+| `review_count` | Number of reviews |
 
-## Instalación
+## Installation
 
 ```bash
 npm install
 ```
 
-## Configuración
+## Configuration
 
-Editar el archivo `.env`:
+Edit the `.env` file:
 
 ```env
-# Categoría a scrapear (nombre exacto del sitio)
+# Category to scrape (exact site name)
 CATEGORY_NAME=Acrylics & Relines
 
-# Páginas a scrapear (0 = todas)
+# Pages to scrape (0 = all)
 MAX_PAGES=2
 
-# Delay entre peticiones (segundos)
+# Delay between requests (seconds)
 MIN_DELAY=1
 MAX_DELAY=3
 
-# Tipo de scraper: http o puppeteer
+# Scraper type: http or puppeteer
 SCRAPER_TYPE=http
 
-# Tipo de almacenamiento: json o sqlite
+# Storage type: json or sqlite
 STORAGE_TYPE=json
 
-# Salida JSON (cuando STORAGE_TYPE=json)
+# JSON output (when STORAGE_TYPE=json)
 OUTPUT_FILE=productos.json
 
-# Base de datos SQLite (cuando STORAGE_TYPE=sqlite)
+# SQLite database (when STORAGE_TYPE=sqlite)
 DB_PATH=productos.db
 ```
 
-### Categorías de ejemplo
+### Example Categories
 
 - `Acrylics & Relines`
 - `Alloy`
 - `Anesthetic`
 - `Articulating`
 
-> El nombre debe coincidir exactamente con el sitio web.
+> The name must match exactly with the website.
 
-## Ejecución
+## Execution
 
 ```bash
 npm run scrape
 ```
 
-### Salida esperada
+### Expected Output
 
 ```
 ==================================================
 BENCO DENTAL SCRAPER
 ==================================================
-Categoría: Acrylics & Relines
-Max páginas: 2
+Category: Acrylics & Relines
+Max pages: 2
 Delay: 1.0-3.0s
 Scraper: HTTP
 ==================================================
 
-[Página 1/2]
-  Categoría: Acrylics and Relines
-  Total en sitio: 1353 productos (57 páginas)
-  Detectados: 24 | Guardados: 24 | Omitidos: 0
-  Esperando 2.3s...
-[Página 2/2]
-  Detectados: 24 | Guardados: 24 | Omitidos: 0
+[Page 1/2]
+  Category: Acrylics and Relines
+  Total on site: 1353 products (57 pages)
+  Detected: 24 | Saved: 24 | Skipped: 0
+  Waiting 2.3s...
+[Page 2/2]
+  Detected: 24 | Saved: 24 | Skipped: 0
 
-Guardado en: productos.json
+Saved to: productos.json
 
 ==================================================
-ESTADÍSTICAS DE LA CORRIDA
+RUN STATISTICS
 ==================================================
 {
   "categoryUrl": "https://shop.benco.com/Search?q=...",
@@ -112,23 +112,23 @@ ESTADÍSTICAS DE LA CORRIDA
 ==================================================
 ```
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 test_scraping_node/
 ├── src/
-│   ├── index.js       # Orquestador principal
-│   ├── scraper.js     # Extracción de datos (BencoScraper)
-│   ├── storage.js     # Persistencia (JSON / SQLite)
-│   └── models.js      # Modelos de datos
-├── data/              # Directorio para archivos generados
-├── .env               # Configuración
-├── .gitignore         # Archivos ignorados
-├── package.json       # Dependencias
+│   ├── index.js       # Main orchestrator
+│   ├── scraper.js     # Data extraction (BencoScraper)
+│   ├── storage.js     # Persistence (JSON / SQLite)
+│   └── models.js      # Data models
+├── data/              # Directory for generated files
+├── .env               # Configuration
+├── .gitignore         # Ignored files
+├── package.json       # Dependencies
 └── README.md
 ```
 
-## Arquitectura
+## Architecture
 
 ```
 ┌─────────────┐     ┌───────────────────┐     ┌─────────────────┐
@@ -144,14 +144,14 @@ test_scraping_node/
        └────────────────────┴─────────────────────────┘
 ```
 
-| Módulo | Responsabilidad |
-|--------|-----------------|
-| `models.js` | Estructuras de datos (Config, Statistics) |
-| `scraper.js` | Extracción con patrón Strategy (HTTP / Puppeteer) |
-| `storage.js` | Persistencia con patrón Strategy (JSON / SQLite) |
-| `index.js` | Orquestación del flujo |
+| Module | Responsibility |
+|--------|----------------|
+| `models.js` | Data structures (Config, Statistics) |
+| `scraper.js` | Extraction with Strategy pattern (HTTP / Puppeteer) |
+| `storage.js` | Persistence with Strategy pattern (JSON / SQLite) |
+| `index.js` | Flow orchestration |
 
-## Modo de Scraping
+## Scraping Mode
 
 ### HTTP (default)
 
@@ -159,7 +159,7 @@ test_scraping_node/
 SCRAPER_TYPE=http
 ```
 
-Usa `fetch` nativo + `cheerio`. Rápido y ligero (~100ms/página).
+Uses native `fetch` + `cheerio`. Fast and lightweight (~100ms/page).
 
 ### Puppeteer
 
@@ -167,12 +167,12 @@ Usa `fetch` nativo + `cheerio`. Rápido y ligero (~100ms/página).
 SCRAPER_TYPE=puppeteer
 ```
 
-Usa navegador Chromium headless. Más lento (~2-5s/página) pero útil para:
-- Sitios con JavaScript dinámico
-- Contenido que requiere renderizado
-- Evadir detección anti-bot
+Uses headless Chromium browser. Slower (~2-5s/page) but useful for:
+- Sites with dynamic JavaScript
+- Content that requires rendering
+- Avoiding anti-bot detection
 
-## Almacenamiento
+## Storage
 
 ### JSON (default)
 
@@ -181,7 +181,7 @@ STORAGE_TYPE=json
 OUTPUT_FILE=productos.json
 ```
 
-Genera un archivo JSON con estadísticas y productos.
+Generates a JSON file with statistics and products.
 
 ### SQLite
 
@@ -190,20 +190,20 @@ STORAGE_TYPE=sqlite
 DB_PATH=productos.db
 ```
 
-Crea tablas `products` y `statistics`. Los SKUs duplicados se omiten automáticamente.
+Creates `products` and `statistics` tables. Duplicate SKUs are automatically skipped.
 
 ```bash
-# Consultar datos
+# Query data
 sqlite3 productos.db "SELECT sku, name, price FROM products LIMIT 5;"
 ```
 
-## Limitaciones
+## Limitations
 
-- **Precios**: Solo disponibles para productos con botón "Add to Cart"
-- **Rate limiting**: Usar delays de 1-3 segundos
-- **Paginación**: 24 productos por página
+- **Prices**: Only available for products with "Add to Cart" button
+- **Rate limiting**: Use delays of 1-3 seconds
+- **Pagination**: 24 products per page
 
-## Dependencias
+## Dependencies
 
 ```
 better-sqlite3 >= 11.0.0
